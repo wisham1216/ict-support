@@ -1,0 +1,38 @@
+Create ticket
+    -Department Name
+    -Contact Person
+    -creator
+    -summery
+    -description
+    -category
+        -unspecified
+        -email
+        -hardware
+        -maintenance
+        -network
+        -other
+        -printer
+        -sofware
+        -phone
+        -scanner
+        -reader
+
+
+    -attachment
+    -status
+    -created date
+
+Update ticket
+    -Department Name
+    -Contact Person
+    -summery
+    -description
+    -category
+    -attachment
+    -assignee
+    -priority
+        -high
+        -medium
+        -low
+    -status
+    -updated date

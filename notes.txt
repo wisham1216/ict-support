@@ -1,0 +1,34 @@
+applicatn information,(user)
+======================
+full name
+gender
+date of birth
+designation
+rc number
+mobile number
+email
+section
+Id card number
+
+tyep of access request
+=======================
+    Active directory/domain/intranet
+    office mail
+    file directory/warehouse
+    door access
+    Human resource attadance
+    e passort and passport card system -dermalog
+    maldives citizen screeb system -dermalog
+    PISCES
+    GEMS/eGovement
+    Xapt
+    IMUGA
+    Hiraas
+    FPPS
+    ECD portal
+
+request tyep
+=============
+grant permission
+modify permission
+revoke permission
