@@ -17,6 +17,7 @@ class Ticket extends Model
         'category',
         'attachment',
         'status',
+        'priority',
         'assigned_to'  // Add this line
     ];
     public function user()

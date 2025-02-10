@@ -15,15 +15,38 @@
           <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
             {{ __('Dashboard') }}
           </x-nav-link>
-          <x-nav-link :href="route('tickets.index')" :active="request()->routeIs('tickets.index')">
+          @can('ticket.create')
+          <x-nav-link :href="route('tickets.index')" :active="request()->routeIs('tickets.*')">
             {{ __('Tickets') }}
           </x-nav-link>
-          <x-nav-link :href="route('access-requests.index')" :active="request()->routeIs('access-requests.index')">
+          @endcan
+
+          <x-nav-link :href="route('access-requests.index')" :active="request()->routeIs('access-requests.*')">
             {{ __('Access Requests') }}
           </x-nav-link>
-          <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+          @role('super-admin')
+          <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
             {{ __('Users') }}
           </x-nav-link>
+
+          <x-nav-link :href="route('systems.index')" :active="request()->routeIs('systems.*')">
+            {{ __('Systems') }}
+          </x-nav-link>
+
+
+          <x-nav-link :href="route('system-accesses.index')" :active="request()->routeIs('system-accesses.*')">
+            {{ __('Accesses') }}
+          </x-nav-link>
+
+
+          <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
+            {{ __('Roles') }}
+          </x-nav-link>
+
+          <x-nav-link :href="route('permissions.index')" :active="request()->routeIs('permissions.*')">
+            {{ __('Permissions') }}
+          </x-nav-link>
+          @endrole
 
         </div>
       </div>

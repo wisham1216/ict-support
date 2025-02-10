@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -18,9 +19,25 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(10);
-        return view('users.index', compact('users'));
+        $roles = Role::all();
+        return view('users.index', compact('users', 'roles'));
     }
 
+    public function assignRole(Request $request, User $user)
+    {
+        $request->validate(['role' => 'required|exists:roles,name']);
+        $user->assignRole($request->role);
+
+        return back()->with('success', 'Role assigned successfully!');
+    }
+
+    public function revokeRole(Request $request, User $user)
+    {
+        $request->validate(['role' => 'required|exists:roles,name']);
+        $user->removeRole($request->role);
+
+        return back()->with('success', 'Role revoked successfully!');
+    }
     public function create()
     {
         return view('users.create');
@@ -41,6 +58,11 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
+    }
+    public function show(User $user)
+    {
+        $user->load('roles');
+        return view('users.show', compact('user'));
     }
 
     public function destroy($id)

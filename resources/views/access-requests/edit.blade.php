@@ -6,112 +6,157 @@
   </x-slot>
 
   <div class="py-12">
-    <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
       <div class="bg-card text-card-foreground rounded-lg border shadow-sm">
         <div class="p-8">
-          <form action="{{ route('access-requests.update', $access->id) }}" method="POST" enctype="multipart/form-data"
-            class="space-y-6">
+          <form action="{{ route('access-requests.update', $access->id) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="name">
-                Name
-              </label>
-              <input type="text" name="name" id="name"
-                class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value="{{ old('name', $access->name) }}" required>
+            <!-- Personal Information -->
+            <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
+              <h3 class="text-lg font-medium text-gray-900">Personal Information</h3>
+
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="space-y-2">
+                  <label for="name" class="text-sm font-medium leading-none">Name</label>
+                  <input type="text" name="name" id="name" value="{{ old('name', $access->name) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="space-y-2">
+                  <label for="nation_id" class="text-sm font-medium leading-none">Nation ID</label>
+                  <input type="text" name="nation_id" id="nation_id" value="{{ old('nation_id', $access->nation_id) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="space-y-2">
+                  <label for="gender" class="text-sm font-medium leading-none">Gender</label>
+                  <select name="gender" id="gender" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="male" {{ old('gender', $access->gender) === 'male' ? 'selected' : '' }}>Male</option>
+                    <option value="female" {{ old('gender', $access->gender) === 'female' ? 'selected' : '' }}>Female</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="dob" class="text-sm font-medium leading-none">Date of Birth</label>
+                  <input type="date" name="dob" id="dob" value="{{ old('dob', $access->dob?->format('Y-m-d')) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+              </div>
             </div>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="email">
-                Email
-              </label>
-              <input type="text" name="email" id="email"
-                class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value="{{ old('email', $access->email) }}" required>
+            <!-- Work Information -->
+            <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
+              <h3 class="text-lg font-medium text-gray-900">Work Information</h3>
+
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="space-y-2">
+                  <label for="record_card_number" class="text-sm font-medium leading-none">Record Card Number</label>
+                  <input type="text" name="record_card_number" id="record_card_number"
+                    value="{{ old('record_card_number', $access->record_card_number) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="space-y-2">
+                  <label for="designation" class="text-sm font-medium leading-none">Designation</label>
+                  <input type="text" name="designation" id="designation"
+                    value="{{ old('designation', $access->designation) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="space-y-2">
+                  <label for="section" class="text-sm font-medium leading-none">Section</label>
+                  <input type="text" name="section" id="section"
+                    value="{{ old('section', $access->section) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+              </div>
             </div>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="access_type">
-                Type of Access Request
-              </label>
-              <select name="access_type" id="access_type"
-                class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                <option value="" disabled>Select access type</option>
-                <option value="active_directory"
-                  {{ old('access_type', $access->access_type) == 'active_directory' ? 'selected' : '' }}>Active
-                  Directory/Domain/Intranet</option>
-                <option value="office_mail"
-                  {{ old('access_type', $access->access_type) == 'office_mail' ? 'selected' : '' }}>Office Mail</option>
-                <option value="file_directory"
-                  {{ old('access_type', $access->access_type) == 'file_directory' ? 'selected' : '' }}>File
-                  Directory/Warehouse</option>
-                <option value="door_access"
-                  {{ old('access_type', $access->access_type) == 'door_access' ? 'selected' : '' }}>Door Access</option>
-                <option value="hr_attendance"
-                  {{ old('access_type', $access->access_type) == 'hr_attendance' ? 'selected' : '' }}>Human Resource
-                  Attendance</option>
-                <option value="dermalog_passport"
-                  {{ old('access_type', $access->access_type) == 'dermalog_passport' ? 'selected' : '' }}>E-Passport and
-                  Passport Card System (Dermalog)</option>
-                <option value="dermalog_citizen"
-                  {{ old('access_type', $access->access_type) == 'dermalog_citizen' ? 'selected' : '' }}>Maldives
-                  Citizen Screen System (Dermalog)</option>
-                <option value="pisces" {{ old('access_type', $access->access_type) == 'pisces' ? 'selected' : '' }}>
-                  PISCES</option>
-                <option value="gems" {{ old('access_type', $access->access_type) == 'gems' ? 'selected' : '' }}>
-                  GEMS/eGovernment</option>
-                <option value="xapt" {{ old('access_type', $access->access_type) == 'xapt' ? 'selected' : '' }}>Xapt
-                </option>
-                <option value="imuga" {{ old('access_type', $access->access_type) == 'imuga' ? 'selected' : '' }}>
-                  IMUGA</option>
-                <option value="hiraas" {{ old('access_type', $access->access_type) == 'hiraas' ? 'selected' : '' }}>
-                  Hiraas</option>
-                <option value="fpps" {{ old('access_type', $access->access_type) == 'fpps' ? 'selected' : '' }}>FPPS
-                </option>
-                <option value="ecd_portal"
-                  {{ old('access_type', $access->access_type) == 'ecd_portal' ? 'selected' : '' }}>ECD Portal</option>
-              </select>
-              @error('access_type')
-                <span class="text-red-500">{{ $message }}</span>
-              @enderror
+            <!-- Contact Information -->
+            <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
+              <h3 class="text-lg font-medium text-gray-900">Contact Information</h3>
+
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="space-y-2">
+                  <label for="mobile" class="text-sm font-medium leading-none">Mobile</label>
+                  <input type="text" name="mobile" id="mobile"
+                    value="{{ old('mobile', $access->mobile) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="space-y-2">
+                  <label for="email" class="text-sm font-medium leading-none">Email</label>
+                  <input type="email" name="email" id="email"
+                    value="{{ old('email', $access->email) }}" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+              </div>
             </div>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="reason">
-                Reason
-              </label>
-              <textarea name="reason" id="reason" rows="4"
-                class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[100px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required>{{ old('reason', $access->reason) }}</textarea>
+            <!-- Access Request Details -->
+            <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
+              <h3 class="text-lg font-medium text-gray-900">Access Request Details</h3>
+
+              <div class="space-y-6">
+                <div class="space-y-2">
+                  <label for="access_type" class="text-sm font-medium leading-none">System</label>
+                  <select name="access_type" id="access_type" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select a system</option>
+                    @foreach($systems as $system)
+                      <option value="{{ $system->id }}"
+                        {{ old('access_type', $access->access_type) == $system->id ? 'selected' : '' }}>
+                        {{ $system->name }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="request_type" class="text-sm font-medium leading-none">Request Type</label>
+                  <select name="request_type" id="request_type" required
+                    class="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @foreach(App\Models\Access::REQUEST_TYPES as $value => $label)
+                      <option value="{{ $value }}"
+                        {{ old('request_type', $access->request_type) === $value ? 'selected' : '' }}>
+                        {{ $label }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="reason" class="text-sm font-medium leading-none">Reason for Access</label>
+                  <textarea name="reason" id="reason" rows="4" required
+                    class="flex w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('reason', $access->reason) }}</textarea>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-sm font-medium leading-none">Access Permissions</label>
+                  <div id="accesses-container" class="mt-2 space-y-2">
+                    @foreach($access->systemAccesses as $systemAccess)
+                      <div class="flex items-center">
+                        <input type="checkbox" name="accesses[]" value="{{ $systemAccess->id }}"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked>
+                        <label class="ml-2 text-sm text-gray-700">{{ $systemAccess->access_name }}</label>
+                      </div>
+                    @endforeach
+                  </div>
+                </div>
+              </div>
             </div>
 
-
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="status">
-                Status
-              </label>
-              <select name="status" id="status"
-                class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                <option value="pending" {{ $access->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ $access->status === 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="rejected" {{ $access->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
-              </select>
-            </div>
-
-            <div class="flex items-center justify-end space-x-4 pt-4">
+            <div class="flex items-center justify-end space-x-4">
               <a href="{{ route('access-requests.index') }}"
-                class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-10 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Cancel
               </a>
               <button type="submit"
-                class="ring-offset-background focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Update Access Request
               </button>
             </div>
@@ -120,4 +165,30 @@
       </div>
     </div>
   </div>
+
+  @push('scripts')
+  <script>
+    document.getElementById('access_type').addEventListener('change', function() {
+      const systemId = this.value;
+      if (systemId) {
+        fetch(`/api/systems/${systemId}/accesses`)
+          .then(response => response.json())
+          .then(data => {
+            const container = document.getElementById('accesses-container');
+            container.innerHTML = '';
+            data.forEach(access => {
+              const div = document.createElement('div');
+              div.className = 'flex items-center';
+              div.innerHTML = `
+                <input type="checkbox" name="accesses[]" value="${access.id}"
+                  class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <label class="ml-2 text-sm text-gray-700">${access.access_name}</label>
+              `;
+              container.appendChild(div);
+            });
+          });
+      }
+    });
+  </script>
+  @endpush
 </x-app-layout>

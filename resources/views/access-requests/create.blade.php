@@ -124,66 +124,60 @@
             <!-- Access Information Section -->
             <div class="mb-8 rounded-lg border bg-gray-50/50 p-6">
               <h3 class="mb-4 text-lg font-semibold">Access Information</h3>
-              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div class="mb-4 space-y-2">
+                <label class="text-sm font-medium leading-none" for="request_type">Request Type</label>
+                <select name="request_type" id="request_type"
+                  class="border-input ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
+                  <option value="">Select Request Type</option>
+                  @foreach(App\Models\Access::REQUEST_TYPES as $value => $label)
+                    <option value="{{ $value }}" {{ old('request_type') == $value ? 'selected' : '' }}>
+                      {{ $label }}
+                    </option>
+                  @endforeach
+                </select>
+                @error('request_type')
+                  <span class="text-red-500">{{ $message }}</span>
+                @enderror
+              </div>
+              <div class="grid grid-cols-1 gap-6" x-data="accessRequestForm()">
                 <div class="space-y-2">
                   <label class="text-sm font-medium leading-none" for="access_type">Type of Access Request</label>
-                  <select name="access_type" id="access_type"
+                  <select name="access_type" id="access_type" x-model="selectedSystem" @change="loadAccesses()"
                     class="border-input ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
-                    <option value="" disabled selected>Select access type</option>
-                    <option value="active_directory" {{ old('access_type') == 'active_directory' ? 'selected' : '' }}>
-                      Active Directory/Domain/Intranet</option>
-                    <option value="office_mail" {{ old('access_type') == 'office_mail' ? 'selected' : '' }}>Office
-                      Mail
-                    </option>
-                    <option value="file_directory" {{ old('access_type') == 'file_directory' ? 'selected' : '' }}>File
-                      Directory/Warehouse</option>
-                    <option value="door_access" {{ old('access_type') == 'door_access' ? 'selected' : '' }}>Door
-                      Access
-                    </option>
-                    <option value="hr_attendance" {{ old('access_type') == 'hr_attendance' ? 'selected' : '' }}>Human
-                      Resource Attendance</option>
-                    <option value="dermalog_passport"
-                      {{ old('access_type') == 'dermalog_passport' ? 'selected' : '' }}>
-                      E-Passport and Passport Card System (Dermalog)</option>
-                    <option value="dermalog_citizen" {{ old('access_type') == 'dermalog_citizen' ? 'selected' : '' }}>
-                      Maldives Citizen Screen System (Dermalog)</option>
-                    <option value="pisces" {{ old('access_type') == 'pisces' ? 'selected' : '' }}>PISCES</option>
-                    <option value="gems" {{ old('access_type') == 'gems' ? 'selected' : '' }}>GEMS/eGovernment
-                    </option>
-                    <option value="xapt" {{ old('access_type') == 'xapt' ? 'selected' : '' }}>Xapt</option>
-                    <option value="imuga" {{ old('access_type') == 'imuga' ? 'selected' : '' }}>IMUGA</option>
-                    <option value="hiraas" {{ old('access_type') == 'hiraas' ? 'selected' : '' }}>Hiraas</option>
-                    <option value="fpps" {{ old('access_type') == 'fpps' ? 'selected' : '' }}>FPPS</option>
-                    <option value="ecd_portal" {{ old('access_type') == 'ecd_portal' ? 'selected' : '' }}>ECD Portal
-                    </option>
+                    <option value="">Select access type</option>
+                    @foreach ($systems as $system)
+                      <option value="{{ $system->id }}" {{ old('access_type') == $system->id ? 'selected' : '' }}>
+                        {{ $system->name }}
+                      </option>
+                    @endforeach
                   </select>
                   @error('access_type')
                     <span class="text-red-500">{{ $message }}</span>
                   @enderror
                 </div>
-                <div class="space-y-2">
-                  <label class="text-sm font-medium leading-none" for="request_type">Request type</label>
-                  <div class="flex space-x-4">
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="request_type" value="grant permission"
-                        {{ old('request_type') == 'grant permission' ? 'checked' : '' }}
-                        class="border-input ring-offset-background focus-visible:ring-ring h-4 w-4 rounded border bg-white text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
-                      <span class="ml-2">Grant Permission</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="request_type" value="modify permission"
-                        {{ old('request_type') == 'modify permission' ? 'checked' : '' }}
-                        class="border-input ring-offset-background focus-visible:ring-ring h-4 w-4 rounded border bg-white text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
-                      <span class="ml-2">Modify Permission</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" name="request_type" value="revoke permission"
-                        {{ old('request_type') == 'revoke permission' ? 'checked' : '' }}
-                        class="border-input ring-offset-background focus-visible:ring-ring h-4 w-4 rounded border bg-white text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
-                      <span class="ml-2">Revoke Permission</span>
-                    </label>
+
+                <div id="access-options" class="space-y-4" x-show="selectedSystem" x-cloak>
+                  <label class="text-sm font-medium leading-none">Available Accesses</label>
+                  <div class="grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-3">
+                    <template x-if="loading">
+                      <div class="col-span-2 text-center">Loading...</div>
+                    </template>
+
+                    <template x-if="!loading && accesses.length === 0">
+                      <div class="col-span-2 text-center">No accesses available for this system</div>
+                    </template>
+
+                    <template x-for="access in accesses" :key="access.id">
+                      <div class="flex items-center space-x-2">
+                        <input type="checkbox" :id="'access_' + access.id" :name="'accesses[]'"
+                          :value="access.id" :checked="selectedAccesses.includes(access.id)"
+                          class="rounded border-gray-300 text-black shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50">
+                        <label :for="'access_' + access.id" class="text-sm text-gray-700"
+                          x-text="access.access_name"></label>
+                      </div>
+                    </template>
                   </div>
-                  @error('request_type')
+                  @error('accesses')
                     <span class="text-red-500">{{ $message }}</span>
                   @enderror
                 </div>
@@ -198,7 +192,6 @@
                 </div>
               </div>
             </div>
-
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end space-x-4">
@@ -217,3 +210,49 @@
     </div>
   </div>
 </x-app-layout>
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('accessRequestForm', () => ({
+      selectedSystem: '{{ old('access_type') }}',
+      accesses: [],
+      loading: false,
+      selectedAccesses: @json(old('accesses', [])),
+
+      async loadAccesses() {
+        if (!this.selectedSystem) {
+          this.accesses = [];
+          return;
+        }
+
+        this.loading = true;
+        try {
+          const response = await fetch(`/api/systems/${this.selectedSystem}/accesses`, {
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const data = await response.json();
+          this.accesses = data;
+        } catch (error) {
+          console.error('Error:', error);
+          this.accesses = [];
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      init() {
+        if (this.selectedSystem) {
+          this.loadAccesses();
+        }
+      }
+    }));
+  });
+</script>

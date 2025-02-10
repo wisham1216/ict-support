@@ -105,6 +105,7 @@
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Name</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Section</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Email</th>
+
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Status</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Created At</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Actions</th>
@@ -117,11 +118,13 @@
                     <td class="p-4 align-middle">{{ $accessRequest->name }}</td>
                     <td class="p-4 align-middle uppercase">{{ $accessRequest->section }}</td>
                     <td class="p-4 align-middle">{{ $accessRequest->email }}</td>
+
                     <td class="p-4 align-middle">
                       <span
-                        class="{{ $accessRequest->status === 'pending' ? 'bg-green-50 text-green-700 border border-green-300' : '' }} {{ $accessRequest->status === 'approved' ? 'bg-yellow-50 text-yellow-700 border border-yellow-300' : '' }} {{ $accessRequest->status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-300' : '' }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                        class="{{ $accessRequest->status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-300' : '' }} {{ $accessRequest->status === 'approved' ? 'bg-green-50 text-green-700 border border-green-300' : '' }} {{ $accessRequest->status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-300' : '' }} {{ $accessRequest->status === 'granted' ? 'bg-blue-50 text-blue-700 border border-blue-300' : '' }} {{ $accessRequest->status === 'revoked' ? 'bg-gray-50 text-gray-700 border border-gray-300' : '' }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold">
                         {{ ucfirst(str_replace('_', ' ', $accessRequest->status)) }}
                       </span>
+
                     </td>
                     <td class="p-4 align-middle">{{ $accessRequest->created_at->format('d-M-Y - H:i') }}</td>
                     <td class="p-4 align-middle">

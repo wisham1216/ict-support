@@ -14,6 +14,11 @@ class TicketController extends Controller
     {
         $query = Ticket::query()->with('assignedTo');
 
+        // If user can only view own tickets
+        if (!auth()->user()->can('ticket.view.any')) {
+            $query->where('creator_id', auth()->id());
+        }
+
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('department_name', 'like', '%' . $request->search . '%')
@@ -34,6 +39,10 @@ class TicketController extends Controller
             $query->where('assigned_to', $request->assigned_to);
         }
 
+        if ($request->has('priority') && $request->priority !== 'all') {
+            $query->where('priority', $request->priority);
+        }
+
         // Get unique departments for the filter dropdown
         $departments = Ticket::distinct()->pluck('department_name');
 
@@ -47,6 +56,9 @@ class TicketController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->can('ticket.create')) {
+            abort(403, 'Unauthorized action.');
+        }
         return view('tickets.create');
     }
 
@@ -77,6 +89,15 @@ class TicketController extends Controller
     public function show($id)
     {
         $ticket = Ticket::with('user', 'comments.user', 'assignedTo')->findOrFail($id);
+
+        // Check if user can view this specific ticket
+        if (
+            !auth()->user()->can('ticket.view.any') &&
+            $ticket->creator_id !== auth()->id()
+        ) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $users = \App\Models\User::all();
         return view('tickets.show', compact('ticket', 'users'));
     }
@@ -86,6 +107,9 @@ class TicketController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
+        if (!auth()->user()->can('ticket.update.status')) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'status' => 'required|in:open,in_progress,closed',
         ]);
@@ -100,11 +124,17 @@ class TicketController extends Controller
 
     public function edit(Ticket $ticket)
     {
+        if (!auth()->user()->can('ticket.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
         return view('tickets.edit', compact('ticket'));
     }
 
     public function update(Request $request, Ticket $ticket)
     {
+        if (!auth()->user()->can('ticket.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
         $validated = $request->validate([
             'department_name' => 'required|string|max:255',
             'contact_person' => 'required|string|max:255',
@@ -131,6 +161,9 @@ class TicketController extends Controller
 
     public function destroy(Ticket $ticket)
     {
+        if (!auth()->user()->can('ticket.delete')) {
+            abort(403, 'Unauthorized action.');
+        }
         if ($ticket->attachment) {
             Storage::delete($ticket->attachment);
         }
@@ -143,6 +176,9 @@ class TicketController extends Controller
 
     public function assign(Request $request, Ticket $ticket)
     {
+        if (!auth()->user()->can('ticket.assign')) {
+            abort(403, 'Unauthorized action.');
+        }
         $validated = $request->validate([
             'assigned_to' => 'required|exists:users,id'
         ]);
@@ -153,5 +189,25 @@ class TicketController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Ticket assigned successfully');
+    }
+
+    public function updatePriority(Request $request, Ticket $ticket)
+    {
+        if (!auth()->user()->can('ticket.update.priority')) {
+            abort(403, 'Unauthorized action.');
+        }
+        $validated = $request->validate([
+            'priority' => 'required|in:low,medium,high,urgent',
+        ]);
+
+        $ticket->update($validated);
+
+        // Add to timeline as a comment
+        $ticket->comments()->create([
+            'content' => "Priority changed to " . ucfirst($request->priority),
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Ticket priority updated successfully');
     }
 }

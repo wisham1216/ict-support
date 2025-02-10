@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Access;
+use App\Models\System;
+use App\Models\SystemAccss;
 use Illuminate\Http\Request;
 
 class AccessController extends Controller
@@ -13,6 +15,11 @@ class AccessController extends Controller
     public function index(Request $request)
     {
         $query = Access::query();
+
+        // If user can only view own requests
+        if (!auth()->user()->can('access-request.view.any')) {
+            $query->where('user_id', auth()->id());
+        }
 
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
@@ -36,7 +43,7 @@ class AccessController extends Controller
         // Get unique sections for the filter dropdown
         $sections = Access::distinct()->pluck('section');
 
-        return view('access-requests.index', compact('accessRequests', 'sections'));
+        return view('access-requests.index', compact('accessRequests', 'sections', ));
     }
 
     /**
@@ -44,7 +51,18 @@ class AccessController extends Controller
      */
     public function create()
     {
-        return view('access-requests.create');
+        $systems = System::all();
+
+        $systemAccesses = []; // Initialize empty array for initial load
+
+        // If there's an old input for access_type, load its accesses
+        if (old('access_type')) {
+            $systemAccesses = SystemAccss::where('system_id', old('access_type'))
+                ->select('id', 'name')
+                ->get();
+        }
+
+        return view('access-requests.create', compact('systems', 'systemAccesses'));
     }
 
     /**
@@ -63,14 +81,29 @@ class AccessController extends Controller
             'mobile' => 'required|string|max:255',
             'email' => 'required|email',
             'reason' => 'required|string|max:255',
-            'access_type' => 'required|string|max:255',
+            'access_type' => 'required|exists:systems,id',
+            'request_type' => Access::$rules['request_type'],
+            'accesses' => 'required|array',
+            'accesses.*' => 'exists:system_accsses,id'
         ]);
 
         // Set default status for new requests
         $validated['status'] = 'pending';
 
-        // Create access request using validated data only
-        Access::create($validated);
+        // Add user_id if authenticated
+        if (auth()->check()) {
+            $validated['user_id'] = auth()->id();
+        }
+
+        // Remove accesses from validated data since it's not a column
+        $selectedAccesses = $validated['accesses'];
+        unset($validated['accesses']);
+
+        // Create access request
+        $access = Access::create($validated);
+
+        // Attach selected system accesses
+        $access->systemAccesses()->attach($selectedAccesses);
 
         return redirect()->route('access-requests.index')
             ->with('success', 'Access request created successfully.');
@@ -81,7 +114,14 @@ class AccessController extends Controller
      */
     public function show($id)
     {
-        $access = Access::findOrFail($id);
+        $access = Access::with([
+            'user',
+            'system',
+            'grantedBy.roles',
+            'modifiedBy.roles',
+            'revokedBy.roles'
+        ])->findOrFail($id);
+
         return view('access-requests.show', compact('access'));
     }
 
@@ -90,8 +130,10 @@ class AccessController extends Controller
      */
     public function edit($id)
     {
-        $access = Access::findOrFail($id);
-        return view('access-requests.edit', compact('access'));
+        $access = Access::with('systemAccesses')->findOrFail($id);
+        $systems = System::all();
+
+        return view('access-requests.edit', compact('access', 'systems'));
     }
 
     /**
@@ -100,15 +142,32 @@ class AccessController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
             'name' => 'required|string|max:255',
+            'nation_id' => 'required|string|max:255',
+            'gender' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'record_card_number' => 'required|string|max:255',
+            'designation' => 'required|string|max:255',
+            'section' => 'required|string|max:255',
+            'mobile' => 'required|string|max:255',
             'email' => 'required|email',
             'reason' => 'required|string|max:255',
-            'access_type' => 'required|string|max:255',
+            'access_type' => 'required|exists:systems,id',
+            'request_type' => Access::$rules['request_type'],
+            'accesses' => 'required|array',
+            'accesses.*' => 'exists:system_accsses,id'
         ]);
+
         $access = Access::findOrFail($id);
+
+        // Update basic information
         $access->update($validated);
-        return redirect()->route('access-requests.index')->with('success', 'Access request updated successfully.');
+
+        // Sync the system accesses
+        $access->systemAccesses()->sync($request->accesses);
+
+        return redirect()->route('access-requests.index')
+            ->with('success', 'Access request updated successfully.');
     }
 
     /**
@@ -123,6 +182,7 @@ class AccessController extends Controller
 
     public function grantPermission(Access $access)
     {
+        $this->authorize('access-request.grant');
         $access->update([
             'status' => 'granted',
             'granted_at' => now(),
@@ -134,6 +194,7 @@ class AccessController extends Controller
 
     public function modifyPermission(Access $access)
     {
+        $this->authorize('access-request.modify');
         $access->update([
             'status' => 'modified',
             'modified_at' => now(),
@@ -145,6 +206,7 @@ class AccessController extends Controller
 
     public function revokePermission(Access $access)
     {
+        $this->authorize('access-request.revoke');
         $access->update([
             'status' => 'revoked',
             'revoked_at' => now(),
@@ -152,5 +214,38 @@ class AccessController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Access permission revoked successfully');
+    }
+
+    /**
+     * Update the status of the access request.
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,granted,rejected,revoked'
+        ]);
+
+        $access = Access::findOrFail($id);
+        $oldStatus = $access->status;
+        $newStatus = $request->status;
+
+        // Update status and related timestamps/users
+        $access->status = $newStatus;
+
+        if ($newStatus === 'granted' && $oldStatus !== 'granted') {
+            $access->granted_at = now();
+            $access->granted_by = auth()->id();
+        } elseif ($newStatus === 'revoked' && $oldStatus !== 'revoked') {
+            $access->revoked_at = now();
+            $access->revoked_by = auth()->id();
+        }
+
+        // Always record modification
+        $access->modified_at = now();
+        $access->modified_by = auth()->id();
+
+        $access->save();
+
+        return redirect()->back()->with('success', 'Access request status updated successfully.');
     }
 }

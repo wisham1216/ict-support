@@ -57,6 +57,7 @@
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">ID</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Name</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Email</th>
+                  <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Roles</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Created At</th>
                   <th class="text-muted-foreground h-12 px-4 text-left align-middle font-medium">Actions</th>
                 </tr>
@@ -67,6 +68,16 @@
                     <td class="p-4 align-middle">{{ $user->id }}</td>
                     <td class="p-4 align-middle">{{ $user->name }}</td>
                     <td class="p-4 align-middle">{{ $user->email }}</td>
+                    <td class="p-4 align-middle">
+                      <div class="flex flex-wrap gap-1">
+                        @foreach ($user->roles as $role)
+                          <span
+                            class="inline-flex items-center rounded-md border border-gray-400 px-3 py-1 text-xs font-medium text-black">
+                            {{ $role->name }}
+                          </span>
+                        @endforeach
+                      </div>
+                    </td>
                     <td class="p-4 align-middle">{{ $user->created_at->format('d-M-Y - H:i') }}</td>
                     <td class="p-4 align-middle">
                       <div class="flex items-center gap-2">
@@ -78,14 +89,35 @@
                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                           </svg>
                         </a>
+                        <a href="{{ route('users.show', $user) }}"
+                          class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </a>
+                        <a href="{{ route('users.roles', $user) }}"
+                          class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-green-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                        </a>
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" onclick="return confirm('Are you sure you want to delete this user?')"
+                          <button type="submit"
+                            onclick="return confirm('Are you sure you want to delete this user?')"
                             class="ring-offset-background focus-visible:ring-ring border-input hover:text-destructive-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                              stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                              stroke-linecap="round" stroke-linejoin="round">
                               <path d="M3 6h18" />
                               <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                               <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />

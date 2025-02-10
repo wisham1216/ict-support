@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <x-slot name="header">
       <h2 class="text-3xl font-bold tracking-tight">
@@ -6,61 +5,68 @@
       </h2>
     </x-slot>
 
-    <div class="py-6">
-      <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div class="mt-6 overflow-hidden bg-white border sm:rounded-lg">
-          <div class="p-6 text-gray-900">
-
-            <!-- Grid Layout -->
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              @foreach ($statusCounts as $statusCount)
-                <!-- Status Card -->
-                <div class="p-4 border rounded-lg
-                    @if($statusCount->status === 'open') text-green-800
-                    @elseif($statusCount->status === 'closed')  text-red-800
-                    @elseif($statusCount->status === 'in_progress') text-yellow-800
-                    @else  text-gray-800 @endif">
-                  <div class="flex items-center space-x-3">
-                    <!-- Icon -->
-                    <div class="p-2 rounded-full
-                        @if($statusCount->status === 'open') bg-green-300
-                        @elseif($statusCount->status === 'closed') bg-red-300
-                        @elseif($statusCount->status === 'in_progress') bg-yellow-300
-                        @else bg-gray-300 @endif">
-                      @if($statusCount->status === 'open')
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      @elseif($statusCount->status === 'closed')
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      @elseif($statusCount->status === 'in_progress')
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
-                        </svg>
-                      @else
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                      @endif
-                    </div>
-
-                    <!-- Status Info -->
-                    <div>
-                      <div class="text-sm font-medium">{{ ucfirst($statusCount->status) }}</div>
-                      <div class="mt-1 text-3xl font-semibold">{{ $statusCount->count }}</div>
-                    </div>
-                  </div>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @can('dashboard.analytics')
+                <!-- Analytics Section -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <!-- ... analytics content ... -->
                 </div>
-              @endforeach
+            @endcan
 
+            <!-- Basic Dashboard Content -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+
+                    <!-- Grid Layout -->
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      @foreach ($statusCounts as $statusCount)
+                        <!-- Status Card -->
+                        <div class="p-4 border rounded-lg
+                            @if($statusCount->status === 'open') text-green-800
+                            @elseif($statusCount->status === 'closed')  text-red-800
+                            @elseif($statusCount->status === 'in_progress') text-yellow-800
+                            @else  text-gray-800 @endif">
+                          <div class="flex items-center space-x-3">
+                            <!-- Icon -->
+                            <div class="p-2 rounded-full
+                                @if($statusCount->status === 'open') bg-green-300
+                                @elseif($statusCount->status === 'closed') bg-red-300
+                                @elseif($statusCount->status === 'in_progress') bg-yellow-300
+                                @else bg-gray-300 @endif">
+                              @if($statusCount->status === 'open')
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              @elseif($statusCount->status === 'closed')
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              @elseif($statusCount->status === 'in_progress')
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+                                </svg>
+                              @else
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                              @endif
+                            </div>
+
+                            <!-- Status Info -->
+                            <div>
+                              <div class="text-sm font-medium">{{ ucfirst($statusCount->status) }}</div>
+                              <div class="mt-1 text-3xl font-semibold">{{ $statusCount->count }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      @endforeach
+
+                    </div>
+
+                </div>
             </div>
-
-          </div>
-
         </div>
-      </div>
     </div>
     <div class="">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">

@@ -1,34 +1,97 @@
-applicatn information,(user)
-======================
-full name
-gender
-date of birth
-designation
-rc number
-mobile number
-email
-section
-Id card number
+POST: http://ict-support.test/api/login
+Headers:
+- Accept: application/json
+- Content-Type: application/json
 
-tyep of access request
-=======================
-    Active directory/domain/intranet
-    office mail
-    file directory/warehouse
-    door access
-    Human resource attadance
-    e passort and passport card system -dermalog
-    maldives citizen screeb system -dermalog
-    PISCES
-    GEMS/eGovement
-    Xapt
-    IMUGA
-    Hiraas
-    FPPS
-    ECD portal
+Body (raw JSON):
+{
+    "email": "your-email@example.com",
+    "password": "your-password",
+    "device_name": "postman"
+}
+POST: http://ict-support.test/api/tickets
 
-request tyep
-=============
-grant permission
-modify permission
-revoke permission
+Headers:
+- Accept: application/json
+- Content-Type: application/json
+- Authorization: Bearer {your-token-from-step-1}
+
+Body (raw JSON):
+{
+    "department_name": "Information Technology",
+    "contact_person": "John Doe",
+    "summary": "Network Issue",
+    "description": "Cannot connect to the network",
+    "category": "Network",
+    "priority": "high"
+}
+GET: http://ict-support.test/api/tickets
+
+Headers:
+- Accept: application/json
+- Authorization: Bearer {your-token}
+
+Optional Query Parameters:
+?status=open
+?priority=high
+?department=IT
+?search=keyword
+
+GET: http://ict-support.test/api/tickets/{ticket_id}
+
+Headers:
+- Accept: application/json
+- Authorization: Bearer {your-token}
+
+POST: http://ict-support.test/api/tickets/{ticket_id}/status
+
+Headers:
+- Accept: application/json
+- Content-Type: application/json
+- Authorization: Bearer {your-token}
+
+Body (raw JSON):
+{
+    "status": "in_progress"
+}
+
+POST: http://ict-support.test/api/tickets/{ticket_id}/priority
+
+Headers:
+- Accept: application/json
+- Content-Type: application/json
+- Authorization: Bearer {your-token}
+
+Body (raw JSON):
+{
+    "priority": "urgent"
+}
+
+POST: http://ict-support.test/api/tickets/{ticket_id}/assign
+
+Headers:
+- Accept: application/json
+- Content-Type: application/json
+- Authorization: Bearer {your-token}
+
+Body (raw JSON):
+{
+    "assigned_to": 1
+}
+DELETE: http://ict-support.test/api/tickets/{ticket_id}
+
+Headers:
+- Accept: application/json
+- Authorization: Bearer {your-token}
+
+GET: http://ict-support.test/api/user
+
+Headers:
+- Accept: application/json
+- Authorization: Bearer {your-token}
+
+POST: http://ict-support.test/api/logout
+
+Headers:
+- Accept: application/json
+- Authorization: Bearer {your-token}

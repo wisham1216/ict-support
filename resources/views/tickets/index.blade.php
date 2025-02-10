@@ -14,16 +14,18 @@
               <h3 class="text-2xl font-semibold leading-none tracking-tight">All Tickets</h3>
               <p class="text-muted-foreground text-sm">Manage your support tickets here.</p>
             </div>
-            <a href="{{ route('tickets.create') }}"
-              class="flex items-center justify-center rounded-md border bg-gray-800 px-4 py-2 font-medium text-white hover:bg-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="mr-2 text-white">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Create Ticket
-            </a>
+            @can('ticket.create')
+              <a href="{{ route('tickets.create') }}"
+                class="flex items-center justify-center rounded-md border bg-gray-800 px-4 py-2 font-medium text-white hover:bg-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="mr-2 text-white">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Create Ticket
+              </a>
+            @endcan
           </div>
 
           <div class="rounded-md border border-gray-200 px-4 py-6 pb-4">
@@ -67,6 +69,17 @@
                   </select>
                 </div>
 
+                <div class="flex-grow">
+                  <select name="priority" id="priority-filter"
+                    class="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">All Priorities</option>
+                    <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low Priority</option>
+                    <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Medium Priority</option>
+                    <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>High Priority</option>
+                    <option value="urgent" {{ request('priority') === 'urgent' ? 'selected' : '' }}>Urgent</option>
+                  </select>
+                </div>
+
                 <div class="flex items-center">
                   <button type="submit"
                     class="flex items-center justify-center rounded-md border bg-gray-800 px-4 py-2 font-medium text-white hover:bg-gray-700">
@@ -87,16 +100,15 @@
             <table class="w-full caption-bottom text-sm">
               <thead class="[&_tr]:border-b">
                 <tr class="hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors">
-                  <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">ID
-                  </th>
+                  <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">ID</th>
                   <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
-                    Department</th>
-                  <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
-                    Contact Person</th>
+                    Department / Contact</th>
                   <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
                     Summary</th>
                   <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
                     Status</th>
+                  <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
+                    Priority</th>
                   <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
                     Created</th>
                   <th class="text-muted-foreground h-12 whitespace-nowrap px-4 text-left align-middle font-medium">
@@ -109,13 +121,26 @@
                 @foreach ($tickets as $ticket)
                   <tr class="hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors">
                     <td class="whitespace-nowrap p-4 align-middle">{{ $ticket->id }}</td>
-                    <td class="whitespace-nowrap p-4 align-middle">{{ $ticket->department_name }}</td>
-                    <td class="whitespace-nowrap p-4 align-middle">{{ $ticket->contact_person }}</td>
+                    <td class="p-4 align-middle">
+                      <div class="flex flex-col">
+                        <span class="font-medium text-gray-900">{{ $ticket->department_name }}</span>
+                        <span class="text-sm text-gray-500">{{ $ticket->contact_person }}</span>
+                      </div>
+                    </td>
                     <td class="whitespace-nowrap p-4 align-middle">{{ $ticket->summary }}</td>
                     <td class="whitespace-nowrap p-4 align-middle">
                       <span
                         class="{{ $ticket->status === 'open' ? 'bg-green-50 text-green-700 border border-green-300' : '' }} {{ $ticket->status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border border-yellow-300' : '' }} {{ $ticket->status === 'closed' ? 'bg-red-50 text-red-700 border border-red-300' : '' }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold">
                         {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
+                      </span>
+                    </td>
+                    <td class="whitespace-nowrap p-4 align-middle">
+                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+                        {{ $ticket->priority === 'low' ? 'bg-gray-100 text-gray-800 border border-gray-300' : '' }}
+                        {{ $ticket->priority === 'medium' ? 'bg-blue-100 text-blue-800 border border-blue-300' : '' }}
+                        {{ $ticket->priority === 'high' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : '' }}
+                        {{ $ticket->priority === 'urgent' ? 'bg-red-100 text-red-800 border border-red-300' : '' }}">
+                        {{ ucfirst($ticket->priority ?? 'low') }} Priority
                       </span>
                     </td>
                     <td class="whitespace-nowrap p-4 align-middle">{{ $ticket->created_at->format('d-M-Y - H:i') }}
@@ -135,37 +160,43 @@
                     </td>
                     <td class="whitespace-nowrap p-4 align-middle">
                       <div class="flex items-center gap-2">
-                        <a href="{{ route('tickets.show', $ticket) }}"
-                          class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-gree hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        </a>
-                        <a href="{{ route('tickets.edit', $ticket) }}"
-                          class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          </svg>
-                        </a>
-                        <form action="{{ route('tickets.destroy', $ticket) }}" method="POST" class="inline">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" onclick="return confirm('Are you sure?')"
-                            class="ring-offset-background focus-visible:ring-ring border-input hover:text-destructive-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                              stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M3 6h18" />
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        @can('ticket.view.own')
+                          <a href="{{ route('tickets.show', $ticket) }}"
+                            class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-gree hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
                             </svg>
-                          </button>
-                        </form>
+                          </a>
+                        @endcan
+                        @can('ticket.edit')
+                          <a href="{{ route('tickets.edit', $ticket) }}"
+                            class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round">
+                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            </svg>
+                          </a>
+                        @endcan
+                        @can('ticket.delete')
+                          <form action="{{ route('tickets.destroy', $ticket) }}" method="POST" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" onclick="return confirm('Are you sure?')"
+                              class="ring-offset-background focus-visible:ring-ring border-input hover:text-destructive-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </form>
+                        @endcan
                       </div>
                     </td>
                   </tr>
@@ -190,6 +221,9 @@
       this.form.submit();
     });
     document.getElementById('assigned-to-filter').addEventListener('change', function() {
+      this.form.submit();
+    });
+    document.getElementById('priority-filter').addEventListener('change', function() {
       this.form.submit();
     });
   </script>

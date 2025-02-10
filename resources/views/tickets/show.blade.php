@@ -48,6 +48,26 @@
                         <option value="closed" {{ $ticket->status === 'closed' ? 'selected' : '' }}>Closed</option>
                       </select>
                     </form>
+
+                    <form action="{{ route('tickets.updatePriority', $ticket->id) }}" method="POST" class="inline">
+                      @csrf
+                      <select name="priority" onchange="this.form.submit()"
+                        class="h-9 rounded-md border px-3 text-sm text-gray-600">
+                        <option value="" disabled>Set Priority</option>
+                        <option value="low" {{ $ticket->priority === 'low' ? 'selected' : '' }}>Low Priority</option>
+                        <option value="medium" {{ $ticket->priority === 'medium' ? 'selected' : '' }}>Medium Priority</option>
+                        <option value="high" {{ $ticket->priority === 'high' ? 'selected' : '' }}>High Priority</option>
+                        <option value="urgent" {{ $ticket->priority === 'urgent' ? 'selected' : '' }}>Urgent</option>
+                      </select>
+                    </form>
+
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium
+                      {{ $ticket->priority === 'low' ? 'bg-gray-100 text-gray-800' : '' }}
+                      {{ $ticket->priority === 'medium' ? 'bg-blue-100 text-blue-800' : '' }}
+                      {{ $ticket->priority === 'high' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                      {{ $ticket->priority === 'urgent' ? 'bg-red-100 text-red-800' : '' }}">
+                      {{ ucfirst($ticket->priority) }} Priority
+                    </span>
                   </div>
                 </div>
 
