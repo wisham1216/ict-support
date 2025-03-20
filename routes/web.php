@@ -39,7 +39,7 @@ Route::get('/dashboard', function () {
     });
     $counts = $ticketTrends->pluck('count');
     return view('dashboard', compact('statusCounts', 'dates', 'counts'));
-})->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -50,90 +50,90 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::controller(TicketController::class)->group(function () {
         Route::get('tickets', 'index')
-            ->middleware('permission:ticket.view.any|ticket.view.own')
+
             ->name('tickets.index');
 
         Route::get('tickets/create', 'create')
-            ->middleware('permission:ticket.create')
+
             ->name('tickets.create');
 
         Route::post('tickets', 'store')
-            ->middleware('permission:ticket.create')
+
             ->name('tickets.store');
 
         Route::get('tickets/{id}', 'show')
-            ->middleware('permission:ticket.view.own')
+
             ->name('tickets.show');
 
         Route::get('tickets/{ticket}/edit', 'edit')
-            ->middleware('permission:ticket.edit')
+
             ->name('tickets.edit');
 
         Route::put('tickets/{ticket}', 'update')
-            ->middleware('permission:ticket.edit')
+
             ->name('tickets.update');
 
         Route::delete('tickets/{ticket}', 'destroy')
-            ->middleware('permission:ticket.delete')
+
             ->name('tickets.destroy');
 
         Route::post('tickets/{id}/status', 'updateStatus')
-            ->middleware('permission:ticket.update.status')
+
             ->name('tickets.updateStatus');
 
         Route::post('tickets/{ticket}/assign', 'assign')
-            ->middleware('permission:ticket.assign')
+
             ->name('tickets.assign');
 
         Route::post('tickets/{ticket}/priority', 'updatePriority')
-            ->middleware('permission:ticket.edit')
+
             ->name('tickets.updatePriority');
     });
 
     // access request routes
     Route::controller(AccessController::class)->group(function () {
         Route::get('access-requests', 'index')
-            ->middleware('permission:access-request.view.any|access-request.view.own')
+
             ->name('access-requests.index');
 
         Route::get('access-requests/create', 'create')
-            ->middleware('permission:access-request.create')
+
             ->name('access-requests.create');
 
         Route::post('access-requests', 'store')
-            ->middleware('permission:access-request.create')
+
             ->name('access-requests.store');
 
         Route::get('access-requests/{id}', 'show')
-            ->middleware('permission:access-request.view.any|access-request.view.own')
+
             ->name('access-requests.show');
 
         Route::get('access-requests/{id}/edit', 'edit')
-            ->middleware('permission:access-request.edit')
+
             ->name('access-requests.edit');
 
         Route::put('access-requests/{id}', 'update')
-            ->middleware('permission:access-request.edit')
+
             ->name('access-requests.update');
 
         Route::delete('access-requests/{id}', 'destroy')
-            ->middleware('permission:access-request.delete')
+
             ->name('access-requests.destroy');
 
         Route::post('access-requests/{id}/update-status', 'updateStatus')
-            ->middleware('permission:access-request.edit')
+
             ->name('access-requests.updateStatus');
 
         Route::post('access-requests/{access}/grant', 'grantPermission')
-            ->middleware('permission:access-request.grant')
+
             ->name('access-requests.grant');
 
         Route::post('access-requests/{access}/modify', 'modifyPermission')
-            ->middleware('permission:access-request.modify')
+
             ->name('access-requests.modify');
 
         Route::post('access-requests/{access}/revoke', 'revokePermission')
-            ->middleware('permission:access-request.revoke')
+
             ->name('access-requests.revoke');
     });
 

@@ -2,11 +2,12 @@
 
 ARG PHP_VERSION=8.2
 ARG NODE_VERSION=18
-FROM ubuntu:22.04 as base
+
+# PHP base stage
+FROM php:8.2-fpm as php_base
 LABEL fly_launch_runtime="laravel"
 
 # PHP_VERSION needs to be repeated here
-# See https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG PHP_VERSION
 ENV DEBIAN_FRONTEND=noninteractive \
     COMPOSER_ALLOW_SUPERUSER=1 \
@@ -25,98 +26,94 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PHP_UPLOAD_MAX_FILE_SIZE=100M \
     PHP_ALLOW_URL_FOPEN=Off
 
-# Prepare base container: 
-# 1. Install PHP, Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-COPY .fly/php/ondrej_ubuntu_php.gpg /etc/apt/trusted.gpg.d/ondrej_ubuntu_php.gpg
-ADD .fly/php/packages/${PHP_VERSION}.txt /tmp/php-packages.txt
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
+    rsync
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gnupg2 ca-certificates git-core curl zip unzip \
-                                                  rsync vim-tiny htop sqlite3 nginx supervisor cron \
-    && ln -sf /usr/bin/vim.tiny /etc/alternatives/vim \
-    && ln -sf /etc/alternatives/vim /usr/bin/vim \
-    && echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu jammy main" > /etc/apt/sources.list.d/ondrej-ubuntu-php-focal.list \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install $(cat /tmp/php-packages.txt) \
-    && ln -sf /usr/sbin/php-fpm${PHP_VERSION} /usr/sbin/php-fpm \
-    && mkdir -p /var/www/html/public && echo "index" > /var/www/html/public/index.php \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. Copy config files to proper locations
-COPY .fly/nginx/ /etc/nginx/
-COPY .fly/fpm/ /etc/php/${PHP_VERSION}/fpm/
-COPY .fly/supervisor/ /etc/supervisor/
-COPY .fly/entrypoint.sh /entrypoint
-COPY .fly/start-nginx.sh /usr/local/bin/start-nginx
-RUN chmod 754 /usr/local/bin/start-nginx
-    
-# 3. Copy application code, skipping files based on .dockerignore
-COPY . /var/www/html
-WORKDIR /var/www/html
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# 4. Setup application dependencies 
-RUN composer install --optimize-autoloader --no-dev \
-    && mkdir -p storage/logs \
-    && php artisan optimize:clear \
-    && chown -R www-data:www-data /var/www/html \
-    && echo "MAILTO=\"\"\n* * * * * www-data /usr/bin/php /var/www/html/artisan schedule:run" > /etc/cron.d/laravel \
-    && sed -i 's/protected \$proxies/protected \$proxies = "*"/g' app/Http/Middleware/TrustProxies.php;\
-    if [ -d .fly ]; then cp .fly/entrypoint.sh /entrypoint; chmod +x /entrypoint; fi;
+# Get Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set working directory
+WORKDIR /var/www
 
+# Copy existing application directory
+COPY . /var/www
 
+# Install dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader
 
-# Multi-stage build: Build static assets
-# This allows us to not include Node within the final container
-FROM node:${NODE_VERSION} as node_modules_go_brrr
+# After composer install
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-RUN mkdir /app
+# Create storage directory and set permissions
+RUN mkdir -p /var/www/storage/framework/{sessions,views,cache} \
+    && mkdir -p /var/www/storage/logs \
+    && chown -R www-data:www-data /var/www/storage \
+    && chown -R www-data:www-data /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
 
-RUN mkdir -p  /app
+# Node.js build stage
+FROM node:${NODE_VERSION} as node_builder
 WORKDIR /app
 COPY . .
-COPY --from=base /var/www/html/vendor /app/vendor
+COPY --from=php_base /var/www/vendor /app/vendor
 
-# Use yarn or npm depending on what type of
-# lock file we might find. Defaults to
-# NPM if no lock file is found.
-# Note: We run "production" for Mix and "build" for Vite
+# Build assets
 RUN if [ -f "vite.config.js" ]; then \
-        ASSET_CMD="build"; \
+    ASSET_CMD="build"; \
     else \
-        ASSET_CMD="production"; \
+    ASSET_CMD="production"; \
     fi; \
     if [ -f "yarn.lock" ]; then \
-        yarn install --frozen-lockfile; \
-        yarn $ASSET_CMD; \
+    yarn install --frozen-lockfile; \
+    yarn $ASSET_CMD; \
     elif [ -f "pnpm-lock.yaml" ]; then \
-        corepack enable && corepack prepare pnpm@latest-8 --activate; \
-        pnpm install --frozen-lockfile; \
-        pnpm run $ASSET_CMD; \
+    corepack enable && corepack prepare pnpm@latest-8 --activate; \
+    pnpm install --frozen-lockfile; \
+    pnpm run $ASSET_CMD; \
     elif [ -f "package-lock.json" ]; then \
-        npm ci --no-audit; \
-        npm run $ASSET_CMD; \
+    npm ci --no-audit; \
+    npm run $ASSET_CMD; \
     else \
-        npm install; \
-        npm run $ASSET_CMD; \
-    fi;
+    npm install; \
+    npm run $ASSET_CMD; \
+    fi
 
-# From our base container created above, we
-# create our final image, adding in static
-# assets that we generated above
-FROM base
+# Final stage
+FROM php_base
+COPY --from=node_builder /app/public /var/www/html/public-npm
 
-# Packages like Laravel Nova may have added assets to the public directory
-# or maybe some custom assets were added manually! Either way, we merge
-# in the assets we generated above rather than overwrite them
-COPY --from=node_modules_go_brrr /app/public /var/www/html/public-npm
-RUN rsync -ar /var/www/html/public-npm/ /var/www/html/public/ \
+# Merge built assets
+RUN rsync -ar /var/www/html/public-npm/ /var/www/public/ \
     && rm -rf /var/www/html/public-npm \
-    && chown -R www-data:www-data /var/www/html/public
+    && chown -R www-data:www-data /var/www/public
 
-# 5. Setup Entrypoint
+# Copy configurations
+COPY docker/nginx.conf /etc/nginx/sites-enabled/default
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create entrypoint script
+RUN echo '#!/bin/sh\n/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf' > /entrypoint \
+    && chmod +x /entrypoint
+
 EXPOSE 8080
-
 ENTRYPOINT ["/entrypoint"]

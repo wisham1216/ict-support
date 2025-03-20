@@ -370,7 +370,7 @@
   </div>
 </x-app-layout>
 
-@can('access-request.grant')
+{{-- @can('access-request.grant')
     <button type="submit" class="btn btn-success">Grant Access</button>
 @endcan
 
@@ -385,3 +385,33 @@
 @can('access-request.revoke')
     <button type="submit" class="btn btn-danger">Revoke Access</button>
 @endcan
+
+<div class="container mx-auto px-4 py-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Access Request Details</h2>
+
+        <div class="mb-4">
+            <p class="text-gray-600">Section Type: {{ ucfirst($access->section_type) }}</p>
+            <p class="text-gray-600">Status: {{ ucfirst($access->status) }}</p>
+
+            @if($access->requiresSectionHeadApproval())
+                @if($sectionHead = $access->sectionHead())
+                    <p class="text-gray-600">Requires approval from: {{ $sectionHead->user->name }}</p>
+                @else
+                    <p class="text-red-600">No section head assigned for this section</p>
+                @endif
+            @endif
+        </div>
+
+        @if(auth()->user()->can('access-request.grant') &&
+            (!$access->requiresSectionHeadApproval() ||
+            ($access->sectionHead() && $access->sectionHead()->user_id === auth()->id())))
+            <form action="{{ route('access-requests.grant', $access) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
+                    Grant Access
+                </button>
+            </form>
+        @endif
+    </div>
+</div> --}}

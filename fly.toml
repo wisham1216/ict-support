@@ -1,16 +1,16 @@
-# fly.toml app configuration file generated for ict-support-patient-hill-2813 on 2025-02-10T14:52:17+05:00
+# fly.toml app configuration file generated for ict-support-holy-wave-6409 on 2025-02-10T15:53:45+05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'ict-support-patient-hill-2813'
+app = 'ict-support-holy-wave-6409'
 primary_region = 'sin'
 console_command = 'php /var/www/html/artisan tinker'
 
 [build]
   [build.args]
     NODE_VERSION = '18'
-    PHP_VERSION = '8.3'
+    PHP_VERSION = '8.2'
 
 [env]
   APP_ENV = 'production'
@@ -19,11 +19,17 @@ console_command = 'php /var/www/html/artisan tinker'
   LOG_STDERR_FORMATTER = 'Monolog\Formatter\JsonFormatter'
   SESSION_DRIVER = 'cookie'
   SESSION_SECURE_COOKIE = 'true'
+  APP_URL = 'https://ict-support-holy-wave-6409.fly.dev'
+  DB_CONNECTION = 'mysql'
+  FILESYSTEM_DISK = 'local'
+  BROADCAST_DRIVER = 'log'
+  CACHE_DRIVER = 'file'
+  QUEUE_CONNECTION = 'sync'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']

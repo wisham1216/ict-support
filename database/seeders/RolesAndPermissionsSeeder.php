@@ -22,10 +22,16 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['name' => 'close tickets']);
 
         // Create roles and assign permissions
-        $userRole = Role::create(['name' => 'user']);
-        $userRole->givePermissionTo(['create tickets', 'view tickets']);
 
-        $supportRole = Role::create(['name' => 'support']);
+
+        $supportRole = Role::create(['name' => 'support', 'guard_name' => 'web']);
+        $supportRole->givePermissionTo([
+            'create tickets',
+            'edit tickets',
+            'view tickets',
+            'assign tickets',
+            'close tickets'
+        ]);
         $supportRole->givePermissionTo([
             'create tickets',
             'edit tickets',
@@ -34,7 +40,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'close tickets'
         ]);
 
-        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole = Role::create(['name' => 'admin', 'guard_name' => 'web']);
         $adminRole->givePermissionTo(Permission::all());
     }
 }

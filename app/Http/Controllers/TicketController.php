@@ -6,12 +6,14 @@ use DB;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Ticket::class);
         $query = Ticket::query()->with('assignedTo');
 
         // If user can only view own tickets
@@ -56,9 +58,7 @@ class TicketController extends Controller
 
     public function create()
     {
-        if (!auth()->user()->can('ticket.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('create', Ticket::class);
         return view('tickets.create');
     }
 
@@ -88,6 +88,7 @@ class TicketController extends Controller
 
     public function show($id)
     {
+        Gate::authorize('ticket.view.any', Ticket::class);
         $ticket = Ticket::with('user', 'comments.user', 'assignedTo')->findOrFail($id);
 
         // Check if user can view this specific ticket
@@ -107,9 +108,7 @@ class TicketController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        if (!auth()->user()->can('ticket.update.status')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('ticket.update.status', Ticket::class);
         $request->validate([
             'status' => 'required|in:open,in_progress,closed',
         ]);
@@ -124,17 +123,13 @@ class TicketController extends Controller
 
     public function edit(Ticket $ticket)
     {
-        if (!auth()->user()->can('ticket.edit')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('edit', Ticket::class);
         return view('tickets.edit', compact('ticket'));
     }
 
     public function update(Request $request, Ticket $ticket)
     {
-        if (!auth()->user()->can('ticket.edit')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('ticket.update', Ticket::class);
         $validated = $request->validate([
             'department_name' => 'required|string|max:255',
             'contact_person' => 'required|string|max:255',
@@ -161,9 +156,7 @@ class TicketController extends Controller
 
     public function destroy(Ticket $ticket)
     {
-        if (!auth()->user()->can('ticket.delete')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('delete', Ticket::class);
         if ($ticket->attachment) {
             Storage::delete($ticket->attachment);
         }
@@ -176,9 +169,7 @@ class TicketController extends Controller
 
     public function assign(Request $request, Ticket $ticket)
     {
-        if (!auth()->user()->can('ticket.assign')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('ticket.assign', Ticket::class);
         $validated = $request->validate([
             'assigned_to' => 'required|exists:users,id'
         ]);
@@ -193,9 +184,7 @@ class TicketController extends Controller
 
     public function updatePriority(Request $request, Ticket $ticket)
     {
-        if (!auth()->user()->can('ticket.update.priority')) {
-            abort(403, 'Unauthorized action.');
-        }
+        Gate::authorize('ticket.update.priority', Ticket::class);
         $validated = $request->validate([
             'priority' => 'required|in:low,medium,high,urgent',
         ]);

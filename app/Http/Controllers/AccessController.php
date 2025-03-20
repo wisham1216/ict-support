@@ -6,9 +6,12 @@ use App\Models\Access;
 use App\Models\System;
 use App\Models\SystemAccss;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class AccessController extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      */
@@ -17,6 +20,7 @@ class AccessController extends Controller
         $query = Access::query();
 
         // If user can only view own requests
+        Gate::authorize('access-request.view.any');
         if (!auth()->user()->can('access-request.view.any')) {
             $query->where('user_id', auth()->id());
         }
@@ -51,6 +55,7 @@ class AccessController extends Controller
      */
     public function create()
     {
+        Gate::authorize('access-request.create');
         $systems = System::all();
 
         $systemAccesses = []; // Initialize empty array for initial load
@@ -70,6 +75,7 @@ class AccessController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('access-request.create');
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'nation_id' => 'required|string|max:255',
@@ -114,6 +120,7 @@ class AccessController extends Controller
      */
     public function show($id)
     {
+        Gate::authorize('access-request.view');
         $access = Access::with([
             'user',
             'system',
@@ -130,6 +137,7 @@ class AccessController extends Controller
      */
     public function edit($id)
     {
+        Gate::authorize('access-request.edit');
         $access = Access::with('systemAccesses')->findOrFail($id);
         $systems = System::all();
 
@@ -141,6 +149,7 @@ class AccessController extends Controller
      */
     public function update(Request $request, $id)
     {
+        Gate::authorize('access-request.edit');
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'nation_id' => 'required|string|max:255',
@@ -175,6 +184,7 @@ class AccessController extends Controller
      */
     public function destroy($id)
     {
+        Gate::authorize('access-request.delete');
         $access = Access::findOrFail($id);
         $access->delete();
         return redirect()->route('access-requests.index')->with('success', 'Access request deleted successfully.');
@@ -182,7 +192,7 @@ class AccessController extends Controller
 
     public function grantPermission(Access $access)
     {
-        $this->authorize('access-request.grant');
+        Gate::authorize('access-request.grant');
         $access->update([
             'status' => 'granted',
             'granted_at' => now(),
@@ -194,7 +204,7 @@ class AccessController extends Controller
 
     public function modifyPermission(Access $access)
     {
-        $this->authorize('access-request.modify');
+        Gate::authorize('access-request.modify');
         $access->update([
             'status' => 'modified',
             'modified_at' => now(),
@@ -206,7 +216,7 @@ class AccessController extends Controller
 
     public function revokePermission(Access $access)
     {
-        $this->authorize('access-request.revoke');
+        Gate::authorize('access-request.revoke');
         $access->update([
             'status' => 'revoked',
             'revoked_at' => now(),
@@ -221,6 +231,7 @@ class AccessController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
+        Gate::authorize('access-request.update.status');
         $request->validate([
             'status' => 'required|in:pending,granted,rejected,revoked'
         ]);

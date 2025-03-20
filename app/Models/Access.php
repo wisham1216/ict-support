@@ -25,7 +25,8 @@ class Access extends Model
         'modified_at',
         'modified_by',
         'revoked_at',
-        'revoked_by'
+        'revoked_by',
+        'section_type'
     ];
 
     protected $casts = [
@@ -126,5 +127,17 @@ class Access extends Model
     public function comments()
     {
         return $this->hasMany(AccessComment::class)->orderBy('created_at', 'desc');
+    }
+
+    public function sectionHead()
+    {
+        return SectionHead::where('section_type', $this->section_type)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    public function requiresSectionHeadApproval()
+    {
+        return in_array($this->section_type, ['deramalog', 'permit', 'gem']);
     }
 }

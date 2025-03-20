@@ -57,6 +57,11 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'access-request.export']);       // Export access requests
         Permission::create(['name' => 'access-request.report.view']);  // View reports
 
+        // Add these permissions
+        Permission::create(['name' => 'section-head.deramalog']);
+        Permission::create(['name' => 'section-head.permit']);
+        Permission::create(['name' => 'section-head.gem']);
+
         // Create roles and assign permissions
         $this->createRoles();
     }
@@ -64,11 +69,11 @@ class PermissionSeeder extends Seeder
     private function createRoles()
     {
         // Super Admin Role
-        $superAdmin = Role::create(['name' => 'super-admin']);
+        $superAdmin = Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
         $superAdmin->givePermissionTo(Permission::all());
 
         // Admin Role
-        $admin = Role::create(['name' => 'admin']);
+        $admin = Role::create(['name' => 'admin', 'guard_name' => 'web']);
         $admin->givePermissionTo([
             'dashboard.view',
             'dashboard.analytics',
@@ -86,7 +91,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         // Manager Role
-        $manager = Role::create(['name' => 'manager']);
+        $manager = Role::create(['name' => 'manager', 'guard_name' => 'web']);
         $manager->givePermissionTo([
             'dashboard.view',
             'ticket.view.any',
@@ -99,7 +104,7 @@ class PermissionSeeder extends Seeder
         ]);
 
         // User Role
-        $user = Role::create(['name' => 'user']);
+        $user = Role::create(['name' => 'user', 'guard_name' => 'web']);
         $user->givePermissionTo([
             'dashboard.view',
             'ticket.view.own',
@@ -107,6 +112,14 @@ class PermissionSeeder extends Seeder
             'ticket.comment',
             'access-request.view.own',
             'access-request.create'
+        ]);
+
+        // Section Head Role
+        $sectionHead = Role::create(['name' => 'section-head', 'guard_name' => 'web']);
+        $sectionHead->givePermissionTo([
+            'access-request.view.any',
+            'access-request.grant',
+            'access-request.reject'
         ]);
     }
 }
